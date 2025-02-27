@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foxy Page</title>
+</head>
+<body style="text-align: center; background-color: black;">
+
+    <h1 style="color: white;">Welcome to Foxy’s Page</h1>
+    <img src="foxy.gif" alt="Foxy GIF" style="width: 50%; height: auto;">
+
+    <!-- Audio player (hidden and autoplay in loop) -->
+    <audio id="background-audio" autoplay loop>
+        <source src="Foxy.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('background-audio');
+            audio.play().catch(error => {
+                console.log("Autoplay was blocked. User interaction is required.");
+            });
+        });
+    </script>
+
+</body>
+</html>
