@@ -47,27 +47,28 @@ def login():
         f"?client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}"
         f"&response_type=code&scope=identify email"
     }
-    
+
+
 async def get_actual_user(request: Request):
     access_token = request.cookies.get("access_token")
     print("Este es tu token chavalada: ", access_token)
-    
+
     if not access_token:
-        raise HTTPException(status_code=401, detail="Token no encontrado en las cookies")
-    
+        raise HTTPException(
+            status_code=401, detail="Token no encontrado en las cookies"
+        )
+
     async with httpx.AsyncClient() as client:
         user_res = await client.get(
             USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"}
         )
-        
+
     print("GOOGLE RESPONSE: ", user_res.json())
-    
+
     if user_res.status_code != 200:
-        raise HTTPException(status_code=401, detail="Token no autorizado chaval")       
-    
-    return user_res.json() 
-    
-    
+        raise HTTPException(status_code=401, detail="Token no autorizado chaval")
+
+    return user_res.json()
 
 
 @router.get("/auth/callback1", response_model=UserResponse)
@@ -134,10 +135,18 @@ async def auth_callback(
 
     return existing_user
 
+
 @router.get("/waza")
 async def root(user: dict = Depends(get_actual_user)):
-    return {"message": f"Hola {user["username"]}, este es tu email: {user["email"]}. Buen dia"}
+    return {
+        "message": f"Hola {user['username']}, este es tu email: {user['email']}. Buen dia"
+    }
 
-@router.get("/ds-users", response_model=List[UserResponse])
+
+@router.get(
+    "/ds-users",
+    response_model=List[UserResponse],
+    dependencies=[Depends(get_actual_user)],
+)
 async def wa(session: Session = Depends(get_session)):
     return get_all_users(session)
