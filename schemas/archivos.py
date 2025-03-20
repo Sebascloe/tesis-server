@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class ArchivosCreate(BaseModel):
-    img_url: str 
+    img_url: str
     
 class ArchivosResponse(ArchivosCreate):
     id: int

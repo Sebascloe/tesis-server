@@ -1,12 +1,30 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from database import create_db_tables
-from controllers import avist_archivo, archivos, avist, departamento, discord, distrito, noticias, provincia, users, auth
+from controllers import (
+    avist_archivo,
+    archivos,
+    avist,
+    departamento,
+    discord,
+    distrito,
+    noticias,
+    provincia,
+    users,
+    auth,
+    uploads,
+)
 
 app = FastAPI()
+
 
 @app.on_event("startup")
 def startup():
     create_db_tables()
+
+
+app.mount("/static", StaticFiles(directory="./images"), name="images")
+app.include_router(uploads.router)
 
 app.include_router(users.router)
 app.include_router(avist.router)

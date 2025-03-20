@@ -39,6 +39,7 @@ USERINFO_URL = "https://discord.com/api/users/@me"
 if not CLIENT_ID or not CLIENT_SECRET or not REDIRECT_URI:
     raise ValueError("Missing Discord OAuth credentials")
 
+
 @router.get("/auth/login1")
 def login():
     return {
@@ -68,8 +69,11 @@ async def get_actual_user(request: Request):
     
     
 
+
 @router.get("/auth/callback1", response_model=UserResponse)
-async def auth_callback(code: str, response: Response, session: Session = Depends(get_session)):
+async def auth_callback(
+    code: str, response: Response, session: Session = Depends(get_session)
+):
     async with httpx.AsyncClient() as client:
         token_data = {
             "client_id": CLIENT_ID,
@@ -77,12 +81,18 @@ async def auth_callback(code: str, response: Response, session: Session = Depend
             "grant_type": "authorization_code",
             "code": code,
             "redirect_uri": REDIRECT_URI,
-            "scope": "identify email"
+            "scope": "identify email",
         }
-        token_res = await client.post(TOKEN_URL, data=token_data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token_res = await client.post(
+            TOKEN_URL,
+            data=token_data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
 
         if token_res.status_code != 200:
-            raise HTTPException(status_code=400, detail="Failed to retrieve access token")
+            raise HTTPException(
+                status_code=400, detail="Failed to retrieve access token"
+            )
 
         token_json = token_res.json()
         access_token = token_json.get("access_token")
@@ -90,11 +100,15 @@ async def auth_callback(code: str, response: Response, session: Session = Depend
         if not access_token:
             raise HTTPException(status_code=400, detail="Invalid token response")
 
-        user_res = await client.get(USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"})
+        user_res = await client.get(
+            USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"}
+        )
         user_info = user_res.json()
 
     # Buscar usuario en la base de datos
-    existing_user = session.exec(select(Users).where(Users.email == user_info["email"])).first()
+    existing_user = session.exec(
+        select(Users).where(Users.email == user_info["email"])
+    ).first()
 
     if not existing_user:
         new_user = Users(
@@ -102,7 +116,7 @@ async def auth_callback(code: str, response: Response, session: Session = Depend
             email=user_info["email"],
             phone="",
             dni="",
-            distrito_id=None
+            distrito_id=None,
         )
         session.add(new_user)
         session.commit()
@@ -115,7 +129,7 @@ async def auth_callback(code: str, response: Response, session: Session = Depend
         value=access_token,
         httponly=True,
         secure=False,
-        samesite="Lax"
+        samesite="Lax",
     )
 
     return existing_user
